@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { axiosWithAuth } from '../utils/axiosWithAuth';
+import { useForm } from 'react-hook-form';
 
 const initialColor = {
   color: "",
@@ -10,6 +11,13 @@ const ColorList = ({ colors, updateColors }) => {
   console.log(colors);
   const [editing, setEditing] = useState(false);
   const [colorToEdit, setColorToEdit] = useState(initialColor);
+  const [colorToAdd, setColorToAdd] = useState({
+    color: '',
+    code: { hex: '' },
+    id: Date.now(),
+  });
+
+  const { handleSubmit, register, errors } = useForm({});
 
   const editColor = color => {
     setEditing(true);
@@ -22,7 +30,7 @@ const ColorList = ({ colors, updateColors }) => {
     // think about where will you get the id from...
     // where is is saved right now?
     axiosWithAuth()
-      .put(`/api/colors/:id`, colorToEdit)
+      .put(`/api/colors/${colorToEdit.id}`, colorToEdit)
       .then(res => {
         console.log(res);
         updateColors(
@@ -46,6 +54,17 @@ const ColorList = ({ colors, updateColors }) => {
         setEditing(false);
       })
   };
+
+  const addColor = e => {
+    // e.preventDefault();
+    axiosWithAuth()
+      .post(`/api/colors`, colorToAdd)
+      .then(() => {
+        updateColors([...colors, colorToAdd]);
+        setColorToAdd(initialColor);
+      })
+      .catch(err => console.log('Add Color Errorr', err))
+  }
 
   return (
     <div className="colors-wrap">
@@ -104,6 +123,20 @@ const ColorList = ({ colors, updateColors }) => {
       )}
       <div className="spacer" />
       {/* stretch - build another form here to add a color */}
+
+      <form onSubmit={handleSubmit(addColor)}>
+        <h3>Add a New Color</h3>
+        <label htmlFor=''>color name:</label>
+        <input
+          onChange={e => setColorToAdd({ ...colorToAdd, color: e.target.value })}
+        />
+
+        <label htmlFor='hex'>hex code: </label>
+        <input
+          onChange={e => setColorToAdd({ ...colorToAdd, code: { hex: e.target.value }})}
+          />
+        <button type='submit'>Add Color!</button>
+      </form>
     </div>
   );
 };
