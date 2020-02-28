@@ -6,28 +6,26 @@ import { useForm } from 'react-hook-form';
 const Login = props => {
   // make a post request to retrieve a token from the api
   // when you have handled the token, navigate to the BubblePage route
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [loginData, setLoginData] = useState({
+    username: '',
+    password: '',
+  })
 
   const { handleSubmit, register, errors } = useForm({});
 
   const onSubmit = e => {
     axiosWithAuth()
-      .post('/api/login', {
-        username: username,
-        password: password,
-      })
+      .post('/api/login', loginData)
       .then(res => {
         console.log(res);
         localStorage.setItem('token', res.data.payload);
-        props.history.push('/');
+        props.history.push('/bubblePage');
       })
       .catch(err => console.log('ERRORRRRR', err))
   };
 
   const handleChange = e => {
-    e.preventDefault();
-    setUsername(e.target.value);
+    setLoginData({ ...loginData, [e.target.name]: e.target.value });
   }
 
   return (
